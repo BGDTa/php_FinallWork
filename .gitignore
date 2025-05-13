@@ -1,0 +1,12 @@
+# 忽略上课用的文件夹
+/上课用的/
+
+# 忽略常见的系统文件
+.DS_Store
+Thumbs.db
+
+# 忽略PHP配置和日志文件
+/vendor/
+/logs/
+*.log
+.env 

@@ -1,0 +1,936 @@
+/* 爱心联萌公益志愿信息平台样式表 */
+
+/* 基础样式 */
+:root {
+    --primary-color: #2ecc71;
+    --secondary-color: #3498db;
+    --accent-color: #e74c3c;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --gray-color: #6c757d;
+    --light-gray-color: #e9ecef;
+    --text-color: #333333;
+    --border-radius: 4px;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Helvetica Neue', Arial, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: #f9f9f9;
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+a:hover {
+    color: #27ae60;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+ul {
+    list-style: none;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* 按钮样式 */
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    background-color: var(--primary-color);
+    color: white;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+    outline: none;
+}
+
+.btn:hover {
+    background-color: #27ae60;
+    color: white;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+}
+
+.btn-secondary:hover {
+    background-color: #2980b9;
+}
+
+.btn-danger {
+    background-color: var(--accent-color);
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-outline:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-outline-light {
+    background-color: transparent;
+    border: 1px solid white;
+    color: white;
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+}
+
+/* 表单样式 */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--light-gray-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.form-text {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--gray-color);
+}
+
+/* 头部导航 */
+.main-header {
+    background-color: white;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.main-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 70px;
+}
+
+.logo a {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.main-nav ul {
+    display: flex;
+}
+
+.main-nav ul li {
+    margin-left: 1.5rem;
+}
+
+.main-nav ul li a {
+    color: var(--text-color);
+    font-weight: 500;
+    position: relative;
+    padding-bottom: 5px;
+}
+
+.main-nav ul li a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--primary-color);
+    transition: var(--transition);
+}
+
+.main-nav ul li a:hover::after,
+.main-nav ul li a.active::after {
+    width: 100%;
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+}
+
+.user-actions .btn {
+    margin-left: 10px;
+}
+
+.user-dropdown {
+    position: relative;
+}
+
+.user-dropdown-btn {
+    display: flex;
+    align-items: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+}
+
+.user-dropdown-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 8px;
+}
+
+.user-dropdown-btn span {
+    margin-right: 5px;
+    color: var(--text-color);
+}
+
+.user-dropdown-content {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 180px;
+    background-color: white;
+    box-shadow: var(--shadow);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: var(--transition);
+    z-index: 101;
+}
+
+.user-dropdown:hover .user-dropdown-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.user-dropdown-content a {
+    display: block;
+    padding: 10px 15px;
+    color: var(--text-color);
+    transition: var(--transition);
+}
+
+.user-dropdown-content a:hover {
+    background-color: var(--light-gray-color);
+}
+
+.user-dropdown-content i {
+    width: 20px;
+    margin-right: 5px;
+}
+
+.mobile-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.mobile-toggle span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: var(--text-color);
+    transition: var(--transition);
+}
+
+/* 消息提醒 */
+.message-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.alert {
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: var(--border-radius);
+    border-left: 4px solid;
+    background-color: white;
+    box-shadow: var(--shadow);
+}
+
+.alert-success {
+    border-left-color: var(--primary-color);
+}
+
+.alert-info {
+    border-left-color: var(--secondary-color);
+}
+
+.alert-warning {
+    border-left-color: #f39c12;
+}
+
+.alert-error {
+    border-left-color: var(--accent-color);
+}
+
+/* Banner */
+.banner {
+    background-color: #f8f9fa;
+    padding: 50px 0;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+.banner-content {
+    flex: 1;
+    padding: 0 20px;
+}
+
+.banner h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+}
+
+.banner p {
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+    color: var(--gray-color);
+}
+
+.banner-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.banner-image {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.banner-image img {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+}
+
+/* 核心功能区 */
+.features {
+    padding: 60px 0;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2.5rem;
+    color: var(--dark-color);
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background-color: var(--primary-color);
+    margin: 15px auto 0;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+
+.feature-item {
+    background-color: white;
+    padding: 30px 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+    transition: var(--transition);
+}
+
+.feature-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    width: 70px;
+    height: 70px;
+    background-color: rgba(46, 204, 113, 0.1);
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feature-icon i {
+    font-size: 28px;
+    color: var(--primary-color);
+}
+
+.feature-item h3 {
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.feature-item p {
+    color: var(--gray-color);
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.feature-link {
+    color: var(--primary-color);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+}
+
+.feature-link i {
+    margin-left: 5px;
+    transition: transform 0.3s ease;
+}
+
+.feature-link:hover i {
+    transform: translateX(3px);
+}
+
+/* 项目卡片 */
+.latest-projects {
+    padding: 60px 0;
+    background-color: #f8f9fa;
+}
+
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 30px;
+}
+
+.project-card {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.project-image {
+    height: 180px;
+    position: relative;
+    overflow: hidden;
+}
+
+.project-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.project-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.project-content {
+    padding: 20px;
+}
+
+.project-card h3 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.project-card p {
+    color: var(--gray-color);
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.project-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    color: var(--gray-color);
+}
+
+.project-meta span {
+    display: flex;
+    align-items: center;
+}
+
+.project-meta i {
+    margin-right: 5px;
+}
+
+.view-all {
+    text-align: center;
+    margin-top: 40px;
+}
+
+/* 志愿者故事 */
+.volunteer-stories {
+    padding: 60px 0;
+}
+
+.stories-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+.story-card {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 25px;
+    transition: var(--transition);
+}
+
+.story-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.story-author {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.story-author img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+}
+
+.story-card h3 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.story-card p {
+    color: var(--gray-color);
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.story-link {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+/* 公益课堂 */
+.charity-courses {
+    padding: 60px 0;
+    background-color: #f8f9fa;
+}
+
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+}
+
+.course-card {
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.course-image {
+    height: 180px;
+}
+
+.course-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.course-content {
+    padding: 20px;
+}
+
+.course-card h3 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.course-card p {
+    color: var(--gray-color);
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+/* 统计数据 */
+.stats-section {
+    padding: 60px 0;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.stat-label {
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* 底部 */
+.main-footer {
+    background-color: var(--dark-color);
+    color: #adb5bd;
+    padding: 60px 0 20px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.footer-col h3 {
+    color: white;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.footer-col h3::after {
+    content: '';
+    display: block;
+    width: 30px;
+    height: 2px;
+    background-color: var(--primary-color);
+    margin-top: 8px;
+}
+
+.footer-col p {
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.social-links a:hover {
+    background-color: var(--primary-color);
+}
+
+.footer-col ul li {
+    margin-bottom: 10px;
+}
+
+.footer-col ul li a {
+    color: #adb5bd;
+    transition: var(--transition);
+}
+
+.footer-col ul li a:hover {
+    color: white;
+    padding-left: 5px;
+}
+
+.footer-col .qrcode {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.footer-col .qrcode img {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 10px;
+}
+
+.footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* 回到顶部按钮 */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 40px;
+    height: 40px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition);
+    z-index: 99;
+}
+
+.back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.back-to-top:hover {
+    background-color: #27ae60;
+}
+
+/* 通用样式 */
+.no-data {
+    text-align: center;
+    color: var(--gray-color);
+    margin: 20px 0;
+}
+
+/* 分页 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.pagination li {
+    margin: 0 5px;
+}
+
+.pagination li a,
+.pagination li span {
+    display: inline-block;
+    padding: 5px 12px;
+    border: 1px solid var(--light-gray-color);
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    color: var(--text-color);
+}
+
+.pagination li a:hover {
+    background-color: var(--light-gray-color);
+}
+
+.pagination li.active span {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.pagination li.disabled span {
+    color: var(--gray-color);
+    cursor: not-allowed;
+}
+
+/* 响应式设计 */
+@media (max-width: 991px) {
+    .feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .banner {
+        flex-direction: column;
+    }
+    
+    .banner-content,
+    .banner-image {
+        flex: none;
+        width: 100%;
+    }
+    
+    .banner-image {
+        margin-top: 30px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-header .container {
+        position: relative;
+    }
+    
+    .mobile-toggle {
+        display: flex;
+    }
+    
+    .main-nav {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: white;
+        box-shadow: var(--shadow);
+        padding: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    .main-nav.active {
+        max-height: 300px;
+    }
+    
+    .main-nav ul {
+        flex-direction: column;
+        padding: 15px;
+    }
+    
+    .main-nav ul li {
+        margin: 0 0 15px;
+    }
+    
+    .stories-grid,
+    .courses-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .feature-grid,
+    .stories-grid,
+    .courses-grid,
+    .stats-grid,
+    .footer-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .banner h1 {
+        font-size: 2.2rem;
+    }
+    
+    .banner p {
+        font-size: 1.1rem;
+    }
+    
+    .section-title {
+        font-size: 1.7rem;
+    }
+    
+    .user-dropdown-btn span {
+        display: none;
+    }
+} 
