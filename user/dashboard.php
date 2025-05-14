@@ -302,12 +302,18 @@ $already_checked_in = ($stmt->get_result()->num_rows > 0);
             gap: 10px;
         }
         
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        
         .calendar-day {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 50px;
+            height: 40px;
             border-radius: 5px;
             background-color: #f8f9fa;
             font-size: 0.9rem;

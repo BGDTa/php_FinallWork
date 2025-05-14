@@ -9,6 +9,9 @@ if (is_logged_in()) {
     exit;
 }
 
+// 判断注册类型 (志愿者/机构)
+$register_type = isset($_GET['type']) && $_GET['type'] === 'organization' ? 'organization' : 'volunteer';
+
 // 处理注册表单提交
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = sanitize($_POST['username']);
@@ -16,8 +19,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
     $phone = sanitize($_POST['phone']);
-    $real_name = sanitize($_POST['real_name']);
     $agree_terms = isset($_POST['agree_terms']) ? 1 : 0;
+    
+    // 根据注册类型获取额外字段
+    if ($register_type === 'volunteer') {
+        $real_name = sanitize($_POST['real_name']);
+        $role = 'volunteer';
+        $status = '已审核'; // 志愿者账户无需审核，直接激活
+    } else {
+        $organization_name = sanitize($_POST['organization_name']);
+        $organization_intro = sanitize($_POST['organization_intro']);
+        $role = 'organization';
+        $status = '待审核'; // 机构账户需要审核
+    }
     
     // 验证输入
     $errors = [];
@@ -73,6 +87,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $errors[] = '请输入有效的手机号码';
     }
     
+    // 针对机构的验证
+    if ($register_type === 'organization') {
+        if (empty($organization_name)) {
+            $errors[] = '请输入机构名称';
+        }
+        if (empty($organization_intro)) {
+            $errors[] = '请输入机构简介';
+        }
+    }
+    
     // 验证是否同意条款
     if (!$agree_terms) {
         $errors[] = '您必须同意用户条款和隐私政策';
@@ -81,40 +105,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // 如果没有错误，创建用户
     if (empty($errors)) {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        $status = '已审核'; // 志愿者账户无需审核，直接激活
         
-        $sql = "INSERT INTO users (username, email, password, phone, real_name, role, status) 
-                VALUES (?, ?, ?, ?, ?, 'volunteer', ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ssssss", $username, $email, $hashed_password, $phone, $real_name, $status);
+        if ($register_type === 'volunteer') {
+            $sql = "INSERT INTO users (username, email, password, phone, real_name, role, status) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("sssssss", $username, $email, $hashed_password, $phone, $real_name, $role, $status);
+        } else {
+            $sql = "INSERT INTO users (username, email, password, phone, organization_name, organization_intro, role, status) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ssssssss", $username, $email, $hashed_password, $phone, $organization_name, $organization_intro, $role, $status);
+        }
         
         if ($stmt->execute()) {
-            // 注册成功，自动登录用户
             $user_id = $conn->insert_id;
             
-            $_SESSION['user_id'] = $user_id;
-            $_SESSION['username'] = $username;
-            $_SESSION['role'] = 'volunteer';
-            
-            // 记录注册活动
-            $sql = "UPDATE users SET last_login = NOW() WHERE id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-            
-            // 设置欢迎消息
-            set_message('注册成功！欢迎加入爱心联萌公益志愿平台。', 'success');
-            
-            // 重定向到个人中心
-            header('Location: dashboard.php');
-            exit;
+            if ($register_type === 'volunteer') {
+                // 志愿者直接登录
+                $_SESSION['user_id'] = $user_id;
+                $_SESSION['username'] = $username;
+                $_SESSION['role'] = $role;
+                
+                // 记录登录活动
+                $sql = "UPDATE users SET last_login = NOW() WHERE id = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("i", $user_id);
+                $stmt->execute();
+                
+                // 设置欢迎消息
+                set_message('注册成功！欢迎加入爱心联萌公益志愿平台。', 'success');
+                
+                // 重定向到个人中心
+                header('Location: dashboard.php');
+                exit;
+            } else {
+                // 机构账户需要审核
+                set_message('感谢您的注册！您的机构账户已提交，等待管理员审核。审核结果将通过邮件通知。', 'info');
+                
+                // 重定向到登录页
+                header('Location: login.php');
+                exit;
+            }
         } else {
             $errors[] = '注册失败，请稍后再试';
         }
     }
 }
 
-$page_title = "志愿者注册 - 爱心联萌";
+$page_title = $register_type === 'organization' ? "机构入驻 - 爱心联萌" : "志愿者注册 - 爱心联萌";
 ?>
 
 <!DOCTYPE html>
@@ -260,6 +299,12 @@ $page_title = "志愿者注册 - 爱心联萌";
             margin: 0;
             padding-left: 20px;
         }
+        
+        textarea.form-control {
+            padding: 12px 15px;
+            height: 120px;
+            resize: vertical;
+        }
     </style>
 </head>
 <body>
@@ -269,13 +314,18 @@ $page_title = "志愿者注册 - 爱心联萌";
     <div class="container">
         <div class="register-container">
             <div class="register-header">
-                <h2>成为志愿者</h2>
-                <p>加入爱心联萌，开启您的公益之旅</p>
+                <?php if ($register_type === 'volunteer'): ?>
+                    <h2>成为志愿者</h2>
+                    <p>加入爱心联萌，开启您的公益之旅</p>
+                <?php else: ?>
+                    <h2>机构入驻</h2>
+                    <p>成为爱心联萌平台的合作伙伴，一起传递爱心</p>
+                <?php endif; ?>
             </div>
             
             <div class="role-tabs">
-                <div class="role-tab active">志愿者注册</div>
-                <a href="organization_register.php" class="role-tab">机构入驻</a>
+                <a href="register.php" class="role-tab <?php echo $register_type === 'volunteer' ? 'active' : ''; ?>">志愿者注册</a>
+                <a href="register.php?type=organization" class="role-tab <?php echo $register_type === 'organization' ? 'active' : ''; ?>">机构入驻</a>
             </div>
             
             <?php if (!empty($errors)): ?>
@@ -288,7 +338,7 @@ $page_title = "志愿者注册 - 爱心联萌";
                 </div>
             <?php endif; ?>
             
-            <form class="register-form" method="post" action="">
+            <form class="register-form" method="post" action="<?php echo $_SERVER['REQUEST_URI']; ?>">
                 <div class="form-row">
                     <div class="form-col">
                         <div class="form-group">
@@ -335,6 +385,8 @@ $page_title = "志愿者注册 - 爱心联萌";
                     </div>
                 </div>
                 
+                <?php if ($register_type === 'volunteer'): ?>
+                <!-- 志愿者注册表单字段 -->
                 <div class="form-row">
                     <div class="form-col">
                         <div class="form-group">
@@ -358,12 +410,45 @@ $page_title = "志愿者注册 - 爱心联萌";
                     </div>
                 </div>
                 
-                <div class="agree-terms">
-                    <input type="checkbox" id="agree_terms" name="agree_terms" value="1" <?php echo isset($agree_terms) && $agree_terms ? 'checked' : ''; ?> required>
-                    <label for="agree_terms">我已阅读并同意 <a href="#" target="_blank">用户服务条款</a> 和 <a href="#" target="_blank">隐私政策</a></label>
+                <?php else: ?>
+                <!-- 机构注册表单字段 -->
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="organization_name">机构名称 <span class="required">*</span></label>
+                            <div class="input-group">
+                                <i class="fas fa-building"></i>
+                                <input type="text" id="organization_name" name="organization_name" class="form-control" placeholder="请输入机构全称" value="<?php echo isset($organization_name) ? htmlspecialchars($organization_name) : ''; ?>" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="phone">联系电话 <span class="required">*</span></label>
+                            <div class="input-group">
+                                <i class="fas fa-phone"></i>
+                                <input type="tel" id="phone" name="phone" class="form-control" placeholder="请输入联系电话" value="<?php echo isset($phone) ? htmlspecialchars($phone) : ''; ?>" required>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <button type="submit" class="btn btn-register">注册</button>
+                <div class="form-group">
+                    <label for="organization_intro">机构简介 <span class="required">*</span></label>
+                    <textarea id="organization_intro" name="organization_intro" class="form-control" placeholder="请简要介绍机构的性质、规模、主要业务等" required><?php echo isset($organization_intro) ? htmlspecialchars($organization_intro) : ''; ?></textarea>
+                    <small class="form-text">200-500字为宜</small>
+                </div>
+                <?php endif; ?>
+                
+                <div class="agree-terms">
+                    <input type="checkbox" id="agree_terms" name="agree_terms" value="1" <?php echo isset($agree_terms) && $agree_terms ? 'checked' : ''; ?> required>
+                    <label for="agree_terms">我已阅读并同意 <a href="/not_found.php" target="_blank">用户服务条款</a> 和 <a href="/not_found.php" target="_blank">隐私政策</a></label>
+                </div>
+                
+                <button type="submit" class="btn btn-register">
+                    <?php echo $register_type === 'volunteer' ? '注册' : '提交申请'; ?>
+                </button>
             </form>
             
             <div class="register-footer">

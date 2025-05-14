@@ -132,11 +132,16 @@ $sql = "SELECT * FROM projects
         AND status IN ('招募中', '进行中') 
         LIMIT 3";
 $stmt = $conn->prepare($sql);
-$location_param = '%' . $conn->real_escape_string(explode(' ', $project['location'])[0]) . '%';
-$content_param = $project['title'];
-$stmt->bind_param("iss", $project_id, $location_param, $content_param);
-$stmt->execute();
-$related_projects = $stmt->get_result();
+if (!$stmt) {
+    error_log("MySQL prepare error: " . $conn->error);
+    $related_projects = false;
+} else {
+    $location_param = '%' . $conn->real_escape_string(explode(' ', $project['location'])[0]) . '%';
+    $content_param = $project['title'];
+    $stmt->bind_param("iss", $project_id, $location_param, $content_param);
+    $stmt->execute();
+    $related_projects = $stmt->get_result();
+}
 
 // 获取项目评论
 $sql = "SELECT c.*, u.username, u.avatar FROM comments c 
@@ -797,7 +802,7 @@ $page_title = $project['title'] . " - 爱心联萌";
         </div>
         
         <!-- 相关项目 -->
-        <?php if ($related_projects->num_rows > 0): ?>
+        <?php if ($related_projects && $related_projects->num_rows > 0): ?>
             <div class="related-projects">
                 <h2 class="section-title">相关项目推荐</h2>
                 <div class="related-grid">

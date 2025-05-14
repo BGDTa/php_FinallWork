@@ -20,6 +20,12 @@ $sql = "SELECT s.*, u.username, u.avatar, u.role, p.title as project_title, p.id
         LEFT JOIN projects p ON s.project_id = p.id 
         WHERE s.id = ? AND s.status = '已审核'";
 $stmt = $conn->prepare($sql);
+if (!$stmt) {
+    error_log("MySQL prepare error: " . $conn->error);
+    set_message('系统错误，请稍后再试', 'error');
+    header('Location: index.php');
+    exit;
+}
 $stmt->bind_param("i", $story_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -35,8 +41,13 @@ $story = $result->fetch_assoc();
 // 更新浏览次数
 $sql = "UPDATE stories SET views = views + 1 WHERE id = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $story_id);
-$stmt->execute();
+if (!$stmt) {
+    error_log("MySQL prepare error: " . $conn->error);
+    // 浏览次数更新失败不影响页面显示，继续执行
+} else {
+    $stmt->bind_param("i", $story_id);
+    $stmt->execute();
+}
 
 // 获取评论列表
 $sql = "SELECT c.*, u.username, u.avatar FROM comments c 
@@ -44,9 +55,14 @@ $sql = "SELECT c.*, u.username, u.avatar FROM comments c
         WHERE c.story_id = ? AND c.status = '已审核' 
         ORDER BY c.created_at DESC";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $story_id);
-$stmt->execute();
-$comments = $stmt->get_result();
+if (!$stmt) {
+    error_log("MySQL prepare error: " . $conn->error);
+    $comments = false;
+} else {
+    $stmt->bind_param("i", $story_id);
+    $stmt->execute();
+    $comments = $stmt->get_result();
+}
 
 // 获取相关故事
 $sql = "SELECT s.*, u.username, u.avatar FROM stories s 
@@ -72,9 +88,16 @@ $params[] = $story['project_id'] ?: 0;
 $types .= "i";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param($types, ...$params);
-$stmt->execute();
-$related_stories = $stmt->get_result();
+// 检查语句是否成功准备
+if (!$stmt) {
+    // 处理错误
+    error_log("MySQL prepare error: " . $conn->error);
+    $related_stories = false;
+} else {
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $related_stories = $stmt->get_result();
+}
 
 // 处理点赞操作
 if (isset($_POST['like']) && is_logged_in()) {
@@ -83,39 +106,56 @@ if (isset($_POST['like']) && is_logged_in()) {
     // 检查是否已经点赞
     $sql = "SELECT id FROM story_likes WHERE story_id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ii", $story_id, $user_id);
-    $stmt->execute();
-    $already_liked = ($stmt->get_result()->num_rows > 0);
+    if (!$stmt) {
+        error_log("MySQL prepare error: " . $conn->error);
+        $already_liked = false;
+    } else {
+        $stmt->bind_param("ii", $story_id, $user_id);
+        $stmt->execute();
+        $already_liked = ($stmt->get_result()->num_rows > 0);
+    }
     
     if ($already_liked) {
         // 取消点赞
         $sql = "DELETE FROM story_likes WHERE story_id = ? AND user_id = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ii", $story_id, $user_id);
-        
-        if ($stmt->execute()) {
-            // 更新故事点赞数
-            $sql = "UPDATE stories SET likes = likes - 1 WHERE id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("i", $story_id);
-            $stmt->execute();
+        if (!$stmt) {
+            error_log("MySQL prepare error: " . $conn->error);
+        } else {
+            $stmt->bind_param("ii", $story_id, $user_id);
+            
+            if ($stmt->execute()) {
+                // 更新故事点赞数
+                $sql = "UPDATE stories SET likes = likes - 1 WHERE id = ?";
+                $stmt = $conn->prepare($sql);
+                if ($stmt) {
+                    $stmt->bind_param("i", $story_id);
+                    $stmt->execute();
+                }
+            }
         }
     } else {
         // 添加点赞
         $sql = "INSERT INTO story_likes (story_id, user_id, created_at) VALUES (?, ?, NOW())";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("ii", $story_id, $user_id);
-        
-        if ($stmt->execute()) {
-            // 更新故事点赞数
-            $sql = "UPDATE stories SET likes = likes + 1 WHERE id = ?";
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("i", $story_id);
-            $stmt->execute();
+        if (!$stmt) {
+            error_log("MySQL prepare error: " . $conn->error);
+        } else {
+            $stmt->bind_param("ii", $story_id, $user_id);
             
-            // 给作者增加爱心值
-            if ($story['user_id'] != $user_id) {
-                update_user_points($story['user_id'], 2);
+            if ($stmt->execute()) {
+                // 更新故事点赞数
+                $sql = "UPDATE stories SET likes = likes + 1 WHERE id = ?";
+                $stmt = $conn->prepare($sql);
+                if ($stmt) {
+                    $stmt->bind_param("i", $story_id);
+                    $stmt->execute();
+                
+                    // 给作者增加爱心值
+                    if ($story['user_id'] != $user_id) {
+                        update_user_points($story['user_id'], 2);
+                    }
+                }
             }
         }
     }
@@ -141,23 +181,28 @@ if (isset($_POST['submit_comment']) && is_logged_in()) {
         $sql = "INSERT INTO comments (user_id, story_id, content, status, created_at) 
                 VALUES (?, ?, ?, '已审核', NOW())";
         $stmt = $conn->prepare($sql);
-        $status = '已审核'; // 自动审核通过
-        $stmt->bind_param("iis", $user_id, $story_id, $content);
-        
-        if ($stmt->execute()) {
-            // 给评论者增加爱心值
-            update_user_points($user_id, 1);
-            
-            // 给故事作者增加爱心值（自己评论自己的故事不加分）
-            if ($story['user_id'] != $user_id) {
-                update_user_points($story['user_id'], 1);
-            }
-            
-            set_message('评论发表成功', 'success');
-            header('Location: detail.php?id=' . $story_id . '#comments');
-            exit;
-        } else {
+        if (!$stmt) {
+            error_log("MySQL prepare error: " . $conn->error);
             $comment_error = '评论发表失败，请稍后再试';
+        } else {
+            $status = '已审核'; // 自动审核通过
+            $stmt->bind_param("iis", $user_id, $story_id, $content);
+            
+            if ($stmt->execute()) {
+                // 给评论者增加爱心值
+                update_user_points($user_id, 1);
+                
+                // 给故事作者增加爱心值（自己评论自己的故事不加分）
+                if ($story['user_id'] != $user_id) {
+                    update_user_points($story['user_id'], 1);
+                }
+                
+                set_message('评论发表成功', 'success');
+                header('Location: detail.php?id=' . $story_id . '#comments');
+                exit;
+            } else {
+                $comment_error = '评论发表失败，请稍后再试';
+            }
         }
     }
 }
@@ -167,9 +212,14 @@ $user_liked = false;
 if (is_logged_in()) {
     $sql = "SELECT id FROM story_likes WHERE story_id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ii", $story_id, $_SESSION['user_id']);
-    $stmt->execute();
-    $user_liked = ($stmt->get_result()->num_rows > 0);
+    if (!$stmt) {
+        error_log("MySQL prepare error: " . $conn->error);
+        // 点赞检查失败，默认为false
+    } else {
+        $stmt->bind_param("ii", $story_id, $_SESSION['user_id']);
+        $stmt->execute();
+        $user_liked = ($stmt->get_result()->num_rows > 0);
+    }
 }
 
 $page_title = $story['title'] . " - 爱心联萌";
@@ -627,8 +677,8 @@ $page_title = $story['title'] . " - 爱心联萌";
                             </button>
                         </form>
                         <a href="#comments" class="stat-item">
-                            <i class="far fa-comment"></i>
-                            <span><?php echo $comments->num_rows; ?></span>
+                            <i class="fas fa-comment"></i>
+                            <span><?php echo $comments ? $comments->num_rows : 0; ?></span>
                         </a>
                     </div>
                     <div class="share-buttons">
@@ -642,11 +692,11 @@ $page_title = $story['title'] . " - 爱心联萌";
                 <div id="comments" class="comments-section">
                     <h3 class="comments-title">
                         评论
-                        <span class="comments-count"><?php echo $comments->num_rows; ?></span>
+                        <span class="comments-count"><?php echo $comments ? $comments->num_rows : 0; ?></span>
                     </h3>
                     
                     <div class="comments-list">
-                        <?php if ($comments->num_rows > 0): ?>
+                        <?php if ($comments && $comments->num_rows > 0): ?>
                             <?php while ($comment = $comments->fetch_assoc()): ?>
                                 <div class="comment-item">
                                     <div class="comment-header">
@@ -769,7 +819,7 @@ $page_title = $story['title'] . " - 爱心联萌";
                 <!-- 相关故事 -->
                 <div class="sidebar-card">
                     <h3 class="sidebar-card-title">相关故事</h3>
-                    <?php if ($related_stories->num_rows > 0): ?>
+                    <?php if ($related_stories && $related_stories->num_rows > 0): ?>
                         <div class="related-stories-list">
                             <?php while ($related = $related_stories->fetch_assoc()): ?>
                                 <div class="related-story-item">

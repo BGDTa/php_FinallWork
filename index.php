@@ -150,37 +150,63 @@ $page_title = "爱心联萌 - 公益志愿信息平台";
         <div class="container">
             <h2 class="section-title">公益课堂</h2>
             <div class="courses-grid">
-                <!-- 使用静态内容作为示例 -->
-                <div class="course-card">
-                    <div class="course-image">
-                        <img src="https://source.unsplash.com/random/300x200/?teaching" alt="志愿服务基础">
+                <?php
+                // 获取最新的3个课程
+                $sql = "SELECT * FROM courses WHERE status = '已发布' ORDER BY created_at DESC LIMIT 3";
+                $result = mysqli_query($conn, $sql);
+                
+                if (mysqli_num_rows($result) > 0) {
+                    while ($row = mysqli_fetch_assoc($result)) {
+                        $course_image = !empty($row['cover_image']) ? $row['cover_image'] : 'https://source.unsplash.com/random/300x200/?education';
+                        ?>
+                        <div class="course-card">
+                            <div class="course-image">
+                                <img src="<?php echo $course_image; ?>" alt="<?php echo $row['title']; ?>">
+                            </div>
+                            <div class="course-content">
+                                <h3><?php echo $row['title']; ?></h3>
+                                <p><?php echo mb_substr($row['description'], 0, 50, 'UTF-8') . '...'; ?></p>
+                                <a href="course/detail.php?id=<?php echo $row['id']; ?>" class="btn btn-sm">立即学习</a>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                } else {
+                    // 如果没有课程，显示示例课程
+                    ?>
+                    <div class="course-card">
+                        <div class="course-image">
+                            <img src="https://source.unsplash.com/random/300x200/?teaching" alt="志愿服务基础">
+                        </div>
+                        <div class="course-content">
+                            <h3>志愿服务基础</h3>
+                            <p>了解志愿服务的基本概念、类型以及参与方式</p>
+                            <a href="not_found.php" class="btn btn-sm">立即学习</a>
+                        </div>
                     </div>
-                    <div class="course-content">
-                        <h3>志愿服务基础</h3>
-                        <p>了解志愿服务的基本概念、类型以及参与方式</p>
-                        <a href="course/detail.php?id=1" class="btn btn-sm">立即学习</a>
+                    <div class="course-card">
+                        <div class="course-image">
+                            <img src="https://source.unsplash.com/random/300x200/?education" alt="急救知识培训">
+                        </div>
+                        <div class="course-content">
+                            <h3>急救知识培训</h3>
+                            <p>学习基本急救技能，提升应急反应能力</p>
+                            <a href="not_found.php" class="btn btn-sm">立即学习</a>
+                        </div>
                     </div>
-                </div>
-                <div class="course-card">
-                    <div class="course-image">
-                        <img src="https://source.unsplash.com/random/300x200/?education" alt="急救知识培训">
+                    <div class="course-card">
+                        <div class="course-image">
+                            <img src="https://source.unsplash.com/random/300x200/?learning" alt="环保志愿指南">
+                        </div>
+                        <div class="course-content">
+                            <h3>环保志愿指南</h3>
+                            <p>掌握环保志愿服务的知识和技能，为环境保护贡献力量</p>
+                            <a href="not_found.php" class="btn btn-sm">立即学习</a>
+                        </div>
                     </div>
-                    <div class="course-content">
-                        <h3>急救知识培训</h3>
-                        <p>学习基本急救技能，提升应急反应能力</p>
-                        <a href="course/detail.php?id=2" class="btn btn-sm">立即学习</a>
-                    </div>
-                </div>
-                <div class="course-card">
-                    <div class="course-image">
-                        <img src="https://source.unsplash.com/random/300x200/?learning" alt="环保志愿指南">
-                    </div>
-                    <div class="course-content">
-                        <h3>环保志愿指南</h3>
-                        <p>掌握环保志愿服务的知识和技能，为环境保护贡献力量</p>
-                        <a href="course/detail.php?id=3" class="btn btn-sm">立即学习</a>
-                    </div>
-                </div>
+                    <?php
+                }
+                ?>
             </div>
             <div class="view-all">
                 <a href="course/index.php" class="btn btn-outline">浏览全部课程</a>

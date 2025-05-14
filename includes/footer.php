@@ -5,9 +5,9 @@
                 <h3>关于我们</h3>
                 <p>爱心联萌是一个连接志愿者与公益组织的在线平台，旨在传播"人人可公益"理念，促进社会公益资源有效对接。</p>
                 <div class="social-links">
-                    <a href="#" target="_blank"><i class="fab fa-weixin"></i></a>
-                    <a href="#" target="_blank"><i class="fab fa-weibo"></i></a>
-                    <a href="#" target="_blank"><i class="fab fa-qq"></i></a>
+                    <a href="not_found.php" target="_blank"><i class="fab fa-weixin"></i></a>
+                    <a href="not_found.php" target="_blank"><i class="fab fa-weibo"></i></a>
+                    <a href="not_found.php" target="_blank"><i class="fab fa-qq"></i></a>
                 </div>
             </div>
             <div class="footer-col">
@@ -17,17 +17,17 @@
                     <li><a href="/story/index.php">志愿故事</a></li>
                     <li><a href="/course/index.php">公益课堂</a></li>
                     <li><a href="/user/register.php">志愿者注册</a></li>
-                    <li><a href="/user/organization_register.php">机构入驻</a></li>
+                    <li><a href="/user/register.php?type=organization">机构入驻</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h3>帮助中心</h3>
                 <ul>
-                    <li><a href="#">常见问题</a></li>
-                    <li><a href="#">平台规则</a></li>
-                    <li><a href="#">联系我们</a></li>
-                    <li><a href="#">意见反馈</a></li>
-                    <li><a href="#">隐私政策</a></li>
+                    <li><a href="/not_found.php">常见问题</a></li>
+                    <li><a href="/not_found.php">平台规则</a></li>
+                    <li><a href="/not_found.php">联系我们</a></li>
+                    <li><a href="/not_found.php">意见反馈</a></li>
+                    <li><a href="/not_found.php">隐私政策</a></li>
                 </ul>
             </div>
             <div class="footer-col">

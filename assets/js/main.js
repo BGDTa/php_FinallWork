@@ -248,6 +248,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // 日期格子
         const daysGrid = document.createElement('div');
         daysGrid.className = 'calendar-days';
+        daysGrid.style.display = 'grid';
+        daysGrid.style.gridTemplateColumns = 'repeat(7, 1fr)';
+        daysGrid.style.gap = '5px';
         
         // 添加空白格子（月初前面的空白）
         for (let i = 0; i < firstDay; i++) {

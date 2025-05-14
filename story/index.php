@@ -26,7 +26,7 @@ if (!empty($search)) {
 }
 
 if (!empty($category)) {
-    $where_clause .= " AND s.category = ?";
+    $where_clause .= " AND s.category_id = ?";
     $params[] = $category;
     $types .= "s";
 }
@@ -34,6 +34,9 @@ if (!empty($category)) {
 // 计算总记录数
 $count_sql = "SELECT COUNT(*) as total FROM stories s $where_clause";
 $stmt = $conn->prepare($count_sql);
+if (!$stmt) {
+    die("预处理语句准备失败: " . $conn->error . " SQL: " . $count_sql);
+}
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
 }
@@ -50,6 +53,9 @@ $sql = "SELECT s.*, u.username, u.avatar, p.title as project_title
         ORDER BY s.created_at DESC 
         LIMIT ?, ?";
 $stmt = $conn->prepare($sql);
+if (!$stmt) {
+    die("预处理语句准备失败: " . $conn->error . " SQL: " . $sql);
+}
 $types .= "ii";
 $params[] = $offset;
 $params[] = $limit;
@@ -481,7 +487,7 @@ $page_title = "志愿者故事 - 爱心联萌";
             <div class="container">
                 <div class="section-title">
                     <h2>精选故事</h2>
-                    <p>这些温暖人心的故事获得了志愿者们的广泛共鸣和点赞</p>
+                    <p>这些温暖人心的故事获得了志愿者们的广泛共鸣与认可</p>
                 </div>
                 
                 <div class="featured-grid">
@@ -513,9 +519,13 @@ $page_title = "志愿者故事 - 爱心联萌";
                                             <?php
                                             $sql = "SELECT COUNT(*) as count FROM comments WHERE story_id = ?";
                                             $stmt = $conn->prepare($sql);
-                                            $stmt->bind_param("i", $story['id']);
-                                            $stmt->execute();
-                                            echo $stmt->get_result()->fetch_assoc()['count'];
+                                            if (!$stmt) {
+                                                echo "0";
+                                            } else {
+                                                $stmt->bind_param("i", $story['id']);
+                                                $stmt->execute();
+                                                echo $stmt->get_result()->fetch_assoc()['count'];
+                                            }
                                             ?>
                                         </span>
                                     </div>
@@ -587,9 +597,13 @@ $page_title = "志愿者故事 - 爱心联萌";
                                         <?php
                                         $sql = "SELECT COUNT(*) as count FROM comments WHERE story_id = ?";
                                         $stmt = $conn->prepare($sql);
-                                        $stmt->bind_param("i", $story['id']);
-                                        $stmt->execute();
-                                        echo $stmt->get_result()->fetch_assoc()['count'];
+                                        if (!$stmt) {
+                                            echo "0";
+                                        } else {
+                                            $stmt->bind_param("i", $story['id']);
+                                            $stmt->execute();
+                                            echo $stmt->get_result()->fetch_assoc()['count'];
+                                        }
                                         ?>
                                     </a>
                                     <span><i class="fas fa-heart"></i> <?php echo $story['likes']; ?></span>

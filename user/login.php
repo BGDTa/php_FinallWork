@@ -30,6 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($errors)) {
         $sql = "SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1";
         $stmt = $conn->prepare($sql);
+        
+        if ($stmt === false) {
+            die('准备语句失败: ' . $conn->error);
+        }
+        
         $stmt->bind_param("ss", $username, $username);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -65,13 +70,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     // 记录登录活动
                     $sql = "UPDATE users SET last_login = NOW() WHERE id = ?";
                     $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("i", $user['id']);
-                    $stmt->execute();
+                    
+                    if ($stmt === false) {
+                        // 准备语句失败，记录错误但继续执行
+                        error_log('准备语句失败: ' . $conn->error);
+                    } else {
+                        $stmt->bind_param("i", $user['id']);
+                        $stmt->execute();
+                    }
                     
                     // 根据用户角色重定向
                     switch ($user['role']) {
                         case 'admin':
-                            header('Location: ../admin/index.php');
+                            header('Location: ../index.php');
                             break;
                         case 'organization':
                             header('Location: organization_dashboard.php');

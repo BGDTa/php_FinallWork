@@ -22,7 +22,7 @@ $params = [];
 $types = "";
 
 if (!empty($search)) {
-    $conditions[] = "(title LIKE ? OR description LIKE ?)";
+    $conditions[] = "(p.title LIKE ? OR p.description LIKE ?)";
     $search_param = "%$search%";
     $params[] = $search_param;
     $params[] = $search_param;
@@ -30,30 +30,39 @@ if (!empty($search)) {
 }
 
 if (!empty($status)) {
-    $conditions[] = "status = ?";
+    $conditions[] = "p.status = ?";
     $params[] = $status;
     $types .= "s";
 }
 
 if (!empty($location)) {
-    $conditions[] = "location LIKE ?";
+    $conditions[] = "p.location LIKE ?";
     $params[] = "%$location%";
     $types .= "s";
 }
 
-// 默认只显示招募中和进行中的项目
-if (empty($status)) {
-    $conditions[] = "status IN ('招募中', '进行中')";
+// 只有当没有明确筛选状态且不是从"所有状态"下拉菜单选择时，才默认只显示招募中和进行中的项目
+if (empty($status) && !isset($_GET['status'])) {
+    $conditions[] = "p.status IN ('招募中', '进行中')";
 }
+
+// 如果明确选择了"所有状态"（可能是空字符串值），则不添加状态条件
 
 // 组合查询条件
 $where_clause = !empty($conditions) ? "WHERE " . implode(" AND ", $conditions) : "";
 
 // 计算总记录数
-$count_sql = "SELECT COUNT(*) as total FROM projects $where_clause";
+$count_sql = "SELECT COUNT(*) as total FROM projects p $where_clause";
 $stmt = $conn->prepare($count_sql);
+if (!$stmt) {
+    die("预处理语句准备失败: " . $conn->error . " SQL: " . $count_sql);
+}
 if (!empty($params)) {
-    $stmt->bind_param($types, ...$params);
+    try {
+        $stmt->bind_param($types, ...$params);
+    } catch (Exception $e) {
+        die("绑定参数失败: " . $e->getMessage());
+    }
 }
 $stmt->execute();
 $total = $stmt->get_result()->fetch_assoc()['total'];
@@ -62,7 +71,7 @@ $total_pages = ceil($total / $limit);
 // 获取项目列表
 $sql = "SELECT p.*, u.organization_name FROM projects p 
         LEFT JOIN users u ON p.organization_id = u.id 
-        $where_clause 
+        $where_clause
         ORDER BY 
             CASE 
                 WHEN p.status = '招募中' THEN 1 
@@ -72,10 +81,21 @@ $sql = "SELECT p.*, u.organization_name FROM projects p
             p.created_at DESC 
         LIMIT ?, ?";
 $stmt = $conn->prepare($sql);
+if (!$stmt) {
+    die("预处理语句准备失败: " . $conn->error . " SQL: " . $sql);
+}
+
+// 修复绑定参数的方式
 $types .= "ii";
 $params[] = $offset;
 $params[] = $limit;
-$stmt->bind_param($types, ...$params);
+
+// 直接使用spread操作符绑定参数
+try {
+    $stmt->bind_param($types, ...$params);
+} catch (Exception $e) {
+    die("绑定参数失败: " . $e->getMessage());
+}
 $stmt->execute();
 $projects = $stmt->get_result();
 

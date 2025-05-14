@@ -211,6 +211,8 @@ ul {
 
 .user-actions .btn {
     margin-left: 10px;
+    display: inline-block;
+    opacity: 1;
 }
 
 .user-dropdown {

@@ -12,23 +12,38 @@ $offset = ($page - 1) * $limit;
 $search = isset($_GET['search']) ? sanitize($_GET['search']) : '';
 
 // 构建查询条件
-$where_clause = "WHERE status = '已发布'";
+$where_clause = "WHERE c.status = '已发布'";
 $params = [];
 $types = "";
 
 if (!empty($search)) {
-    $where_clause .= " AND (title LIKE ? OR description LIKE ?)";
+    $where_clause .= " AND (c.title LIKE ? OR c.description LIKE ?)";
     $search_param = "%$search%";
     $params[] = $search_param;
     $params[] = $search_param;
     $types .= "ss";
 }
 
+// 添加分类筛选
+$category = isset($_GET['category']) ? sanitize($_GET['category']) : '';
+if (!empty($category) && $category != 'all') {
+    $where_clause .= " AND c.category_id = ?";
+    $params[] = $category;
+    $types .= "s";
+}
+
 // 计算总记录数
-$count_sql = "SELECT COUNT(*) as total FROM courses $where_clause";
+$count_sql = "SELECT COUNT(*) as total FROM courses c $where_clause";
 $stmt = $conn->prepare($count_sql);
+if (!$stmt) {
+    die("预处理语句准备失败: " . $conn->error . " SQL: " . $count_sql);
+}
 if (!empty($params)) {
-    $stmt->bind_param($types, ...$params);
+    try {
+        $stmt->bind_param($types, ...$params);
+    } catch (Exception $e) {
+        die("绑定参数失败: " . $e->getMessage());
+    }
 }
 $stmt->execute();
 $total = $stmt->get_result()->fetch_assoc()['total'];
@@ -41,12 +56,23 @@ $sql = "SELECT c.*, u.username as author_name FROM courses c
         ORDER BY c.created_at DESC 
         LIMIT ?, ?";
 $stmt = $conn->prepare($sql);
+if (!$stmt) {
+    die("预处理语句准备失败: " . $conn->error . " SQL: " . $sql);
+}
+
+// 修复绑定参数的方式
 $types .= "ii";
 $params[] = $offset;
 $params[] = $limit;
-$stmt->bind_param($types, ...$params);
+
+// 直接使用spread操作符绑定参数
+try {
+    $stmt->bind_param($types, ...$params);
+} catch (Exception $e) {
+    die("绑定参数失败: " . $e->getMessage());
+}
 $stmt->execute();
-$courses = $stmt->get_result();
+$result = $stmt->get_result();
 
 // 获取推荐课程（浏览量最高的3个课程）
 $sql = "SELECT c.*, u.username as author_name FROM courses c 
@@ -399,9 +425,9 @@ $page_title = "公益课堂 - 爱心联萌";
         </div>
         
         <!-- 课程列表 -->
-        <?php if ($courses->num_rows > 0): ?>
+        <?php if ($result->num_rows > 0): ?>
             <div class="courses-grid">
-                <?php while ($course = $courses->fetch_assoc()): ?>
+                <?php while ($course = $result->fetch_assoc()): ?>
                     <div class="course-card">
                         <div class="course-image">
                             <img src="<?php echo !empty($course['cover_image']) ? $course['cover_image'] : 'https://source.unsplash.com/random/300x180/?education'; ?>" alt="<?php echo $course['title']; ?>">

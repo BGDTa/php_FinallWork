@@ -26,14 +26,14 @@
                     <div class="user-dropdown-content">
                         <a href="/user/dashboard.php"><i class="fas fa-tachometer-alt"></i> 个人中心</a>
                         <?php if (is_admin() || is_organization()): ?>
-                            <a href="/admin/index.php"><i class="fas fa-cog"></i> 后台管理</a>
+                            <a href="/not_found.php"><i class="fas fa-cog"></i> 后台管理</a>
                         <?php endif; ?>
-                        <a href="/user/profile.php"><i class="fas fa-user-edit"></i> 编辑资料</a>
+                        <a href="/not_found.php"><i class="fas fa-user-edit"></i> 编辑资料</a>
                         <a href="/user/logout.php"><i class="fas fa-sign-out-alt"></i> 退出登录</a>
                     </div>
                 </div>
             <?php else: ?>
-                <a href="/user/login.php" class="btn btn-outline-light">登录</a>
+                <a href="/user/login.php" class="btn btn-primary">登录</a>
                 <a href="/user/register.php" class="btn btn-primary">注册</a>
             <?php endif; ?>
         </div>
