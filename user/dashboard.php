@@ -296,38 +296,6 @@ $already_checked_in = ($stmt->get_result()->num_rows > 0);
             color: var(--gray-color);
         }
         
-        .checkin-calendar {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-        }
-        
-        .calendar-days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-        }
-        
-        .calendar-day {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 40px;
-            border-radius: 5px;
-            background-color: #f8f9fa;
-            font-size: 0.9rem;
-        }
-        
-        .calendar-day.checked {
-            background-color: #d4edda;
-            color: #28a745;
-        }
-        
-        .day-number {
-            font-weight: bold;
-        }
-        
         .no-data {
             padding: 20px;
             text-align: center;
@@ -409,7 +377,7 @@ $already_checked_in = ($stmt->get_result()->num_rows > 0);
             <div class="actions">
                 <a href="profile.php" class="btn btn-primary">编辑资料</a>
                 <?php if (!$already_checked_in): ?>
-                    <form method="post" action="">
+                    <form method="post" action="dashboard.php">
                         <button type="submit" name="checkin" class="btn btn-secondary">每日打卡</button>
                     </form>
                 <?php else: ?>
@@ -541,7 +509,7 @@ $already_checked_in = ($stmt->get_result()->num_rows > 0);
                         <div class="dashboard-card-title">公益打卡</div>
                         <div class="dashboard-card-actions">
                             <?php if (!$already_checked_in): ?>
-                                <form method="post" action="">
+                                <form method="post" action="dashboard.php">
                                     <button type="submit" name="checkin" class="btn btn-sm">今日打卡</button>
                                 </form>
                             <?php else: ?>
@@ -550,8 +518,6 @@ $already_checked_in = ($stmt->get_result()->num_rows > 0);
                         </div>
                     </div>
                     <div class="dashboard-card-body">
-                        <div id="checkin-calendar"></div>
-                        
                         <div class="checkin-stats" style="margin-top: 15px; text-align: center;">
                             <p>本月累计打卡: 
                                 <?php 
