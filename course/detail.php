@@ -39,23 +39,20 @@ $course = $result->fetch_assoc();
 // 更新浏览次数
 $sql = "UPDATE courses SET views = views + 1 WHERE id = ?";
 $stmt = $conn->prepare($sql);
-if ($stmt === false) {
-    error_log("MySQL prepare error (更新浏览次数): " . $conn->error);
-} else {
+if ($stmt) {
     $stmt->bind_param("i", $course_id);
     $stmt->execute();
 }
 
 // 记录学习进度（如果用户已登录）
+$user_progress = null;
 if (is_logged_in()) {
     $user_id = $_SESSION['user_id'];
     
     // 检查是否已有学习记录
     $sql = "SELECT * FROM course_progress WHERE user_id = ? AND course_id = ?";
     $stmt = $conn->prepare($sql);
-    if ($stmt === false) {
-        error_log("MySQL prepare error (查询学习记录): " . $conn->error);
-    } else {
+    if ($stmt) {
         $stmt->bind_param("ii", $user_id, $course_id);
         $stmt->execute();
         $progress_result = $stmt->get_result();
@@ -65,19 +62,18 @@ if (is_logged_in()) {
             $sql = "INSERT INTO course_progress (user_id, course_id, last_position, status, started_at) 
                     VALUES (?, ?, 0, '进行中', NOW())";
             $stmt = $conn->prepare($sql);
-            if ($stmt === false) {
-                error_log("MySQL prepare error (创建学习记录): " . $conn->error);
-            } else {
+            if ($stmt) {
                 $stmt->bind_param("ii", $user_id, $course_id);
                 $stmt->execute();
             }
         } else {
+            // 获取当前进度
+            $user_progress = $progress_result->fetch_assoc();
+            
             // 更新最后访问时间
             $sql = "UPDATE course_progress SET last_accessed_at = NOW() WHERE user_id = ? AND course_id = ?";
             $stmt = $conn->prepare($sql);
-            if ($stmt === false) {
-                error_log("MySQL prepare error (更新访问时间): " . $conn->error);
-            } else {
+            if ($stmt) {
                 $stmt->bind_param("ii", $user_id, $course_id);
                 $stmt->execute();
             }
@@ -86,56 +82,35 @@ if (is_logged_in()) {
 }
 
 // 获取课程章节
+$chapters_result = null;
 $sql = "SELECT * FROM course_chapters WHERE course_id = ? ORDER BY display_order";
 $stmt = $conn->prepare($sql);
-if ($stmt === false) {
-    error_log("MySQL prepare error (获取课程章节): " . $conn->error);
-    $chapters_result = false;
-} else {
+if ($stmt) {
     $stmt->bind_param("i", $course_id);
     $stmt->execute();
     $chapters_result = $stmt->get_result();
 }
 
 // 获取课程相关资源
+$resources_result = null;
 $sql = "SELECT * FROM media WHERE course_id = ? ORDER BY id";
 $stmt = $conn->prepare($sql);
-if ($stmt === false) {
-    error_log("MySQL prepare error (获取课程资源): " . $conn->error);
-    $resources_result = false;
-} else {
+if ($stmt) {
     $stmt->bind_param("i", $course_id);
     $stmt->execute();
     $resources_result = $stmt->get_result();
 }
 
 // 获取相关课程
+$related_courses = null;
 $sql = "SELECT * FROM courses 
         WHERE id != ? AND status = '已发布' AND 
-        (MATCH(title, description) AGAINST(?) OR author_id = ?) 
+        (title LIKE ? OR author_id = ?) 
         LIMIT 3";
 $stmt = $conn->prepare($sql);
-if ($stmt === false) {
-    error_log("MySQL prepare error (相关课程全文搜索): " . $conn->error);
-    // 可能是没有FULLTEXT索引，使用LIKE替代
-    $sql = "SELECT * FROM courses 
-            WHERE id != ? AND status = '已发布' AND 
-            (title LIKE ? OR author_id = ?) 
-            LIMIT 3";
-    $stmt = $conn->prepare($sql);
-    
-    if ($stmt === false) {
-        error_log("MySQL prepare error (相关课程LIKE搜索): " . $conn->error);
-        $related_courses = false;
-    } else {
-        $search_param = "%" . $conn->real_escape_string($course['title']) . "%";
-        $stmt->bind_param("isi", $course_id, $search_param, $course['author_id']);
-        $stmt->execute();
-        $related_courses = $stmt->get_result();
-    }
-} else {
-    $content_param = $course['title'];
-    $stmt->bind_param("isi", $course_id, $content_param, $course['author_id']);
+if ($stmt) {
+    $search_param = "%" . $conn->real_escape_string($course['title']) . "%";
+    $stmt->bind_param("isi", $course_id, $search_param, $course['author_id']);
     $stmt->execute();
     $related_courses = $stmt->get_result();
 }
@@ -149,19 +124,46 @@ if (isset($_POST['complete_course']) && is_logged_in()) {
             WHERE user_id = ? AND course_id = ?";
     $stmt = $conn->prepare($sql);
     
-    if ($stmt === false) {
-        die('准备语句失败: ' . $conn->error);
-    }
-    
-    $stmt->bind_param("ii", $user_id, $course_id);
-    
-    if ($stmt->execute()) {
-        // 给用户增加爱心值
-        update_user_points($user_id, 15);
+    if ($stmt) {
+        $stmt->bind_param("ii", $user_id, $course_id);
         
-        set_message('恭喜您完成课程学习！获得15点爱心值。', 'success');
-        header('Location: detail.php?id=' . $course_id);
-        exit;
+        if ($stmt->execute()) {
+            // 给用户增加爱心值
+            update_user_points($user_id, 15);
+            
+            set_message('恭喜您完成课程学习！获得15点爱心值。', 'success');
+            header('Location: detail.php?id=' . $course_id);
+            exit;
+        }
+    }
+}
+
+// 计算学习进度
+$progress_percent = 0;
+$status = '未开始';
+
+if (is_logged_in() && $user_progress) {
+    if ($user_progress['status'] == '已完成') {
+        $progress_percent = 100;
+        $status = '已完成';
+    } else {
+        $progress_percent = 30; // 默认值，实际应该根据学习时间、章节完成情况等计算
+        $status = '学习中';
+    }
+}
+
+// 获取用户笔记内容
+$user_notes = '';
+if (is_logged_in()) {
+    $sql = "SELECT notes FROM course_progress WHERE user_id = ? AND course_id = ?";
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param("ii", $_SESSION['user_id'], $course_id);
+        $stmt->execute();
+        $notes_result = $stmt->get_result();
+        if ($notes_result->num_rows > 0) {
+            $user_notes = $notes_result->fetch_assoc()['notes'];
+        }
     }
 }
 
@@ -254,12 +256,14 @@ $page_title = $course['title'] . " - 爱心联萌";
         }
         
         .course-video iframe, 
-        .course-video video {
+        .course-video video,
+        .course-video img {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            object-fit: cover;
         }
         
         .course-tabs {
@@ -497,27 +501,6 @@ $page_title = $course['title'] . " - 爱心联萌";
             color: var(--gray-color);
         }
         
-        @media (max-width: 991px) {
-            .course-detail-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .course-sidebar {
-                position: static;
-                margin-top: 0;
-            }
-            
-            .related-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .related-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
         .course-sidebar-section {
             margin-top: 30px;
             background-color: white;
@@ -566,29 +549,26 @@ $page_title = $course['title'] . " - 爱心联萌";
             color: var(--gray-color);
         }
         
-        /* 登录状态下的特殊样式修复 */
-        <?php if (is_logged_in()): ?>
-        .course-sidebar {
-            display: block !important;
-            visibility: visible !important;
+        @media (max-width: 991px) {
+            .course-detail-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .course-sidebar {
+                position: static;
+                margin-top: 0;
+            }
+            
+            .related-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
         
-        /* 确保侧边栏内部元素正常显示 */
-        .sidebar-card, 
-        .progress-bar, 
-        .progress-fill, 
-        .progress-text, 
-        .learning-actions,
-        .learning-tips,
-        .share-buttons {
-            display: block !important;
+        @media (max-width: 768px) {
+            .related-grid {
+                grid-template-columns: 1fr;
+            }
         }
-        
-        /* 确保标签页切换正常 */
-        .course-tab {
-            pointer-events: auto !important;
-        }
-        <?php endif; ?>
     </style>
 </head>
 <body>
@@ -725,16 +705,7 @@ $page_title = $course['title'] . " - 爱心联萌";
                             <h3>我的学习笔记</h3>
                             <form action="../ajax/save_notes.php" method="post">
                                 <input type="hidden" name="course_id" value="<?php echo $course_id; ?>">
-                                <textarea name="notes" class="form-control" rows="10" placeholder="在这里记录您的学习心得和笔记..."><?php 
-                                    $sql = "SELECT notes FROM course_progress WHERE user_id = ? AND course_id = ?";
-                                    $stmt = $conn->prepare($sql);
-                                    $stmt->bind_param("ii", $_SESSION['user_id'], $course_id);
-                                    $stmt->execute();
-                                    $notes_result = $stmt->get_result();
-                                    if ($notes_result->num_rows > 0) {
-                                        echo $notes_result->fetch_assoc()['notes'];
-                                    }
-                                ?></textarea>
+                                <textarea name="notes" class="form-control" rows="10" placeholder="在这里记录您的学习心得和笔记..."><?php echo $user_notes; ?></textarea>
                                 <button type="submit" class="btn btn-primary" style="margin-top: 15px;">保存笔记</button>
                             </form>
                         </div>
@@ -751,36 +722,6 @@ $page_title = $course['title'] . " - 爱心联萌";
                 <div class="sidebar-card">
                     <h3 class="sidebar-card-title">学习进度</h3>
                     <?php if (is_logged_in()): ?>
-                        <?php
-                        $progress_percent = 0;
-                        $status = '未开始';
-                        $progress = null;
-                        
-                        try {
-                            $sql = "SELECT * FROM course_progress WHERE user_id = ? AND course_id = ?";
-                            $stmt = $conn->prepare($sql);
-                            if ($stmt) {
-                                $stmt->bind_param("ii", $_SESSION['user_id'], $course_id);
-                                $stmt->execute();
-                                $progress_result = $stmt->get_result();
-                                if ($progress_result && $progress_result->num_rows > 0) {
-                                    $progress = $progress_result->fetch_assoc();
-                                }
-                            }
-                            
-                            if ($progress) {
-                                if ($progress['status'] == '已完成') {
-                                    $progress_percent = 100;
-                                    $status = '已完成';
-                                } else {
-                                    $progress_percent = 30; // 默认值，实际应该根据学习时间、章节完成情况等计算
-                                    $status = '学习中';
-                                }
-                            }
-                        } catch (Exception $e) {
-                            error_log("课程进度查询失败: " . $e->getMessage());
-                        }
-                        ?>
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: <?php echo $progress_percent; ?>%"></div>
                         </div>
@@ -790,7 +731,7 @@ $page_title = $course['title'] . " - 爱心联萌";
                         </div>
                         
                         <div class="learning-actions">
-                            <?php if (!$progress || $progress['status'] != '已完成'): ?>
+                            <?php if ($status != '已完成'): ?>
                                 <form method="post" action="">
                                     <button type="submit" name="complete_course" class="btn btn-complete">标记为已完成</button>
                                 </form>
@@ -860,22 +801,13 @@ $page_title = $course['title'] . " - 爱心联萌";
     <script>
         // 当DOM加载完成时执行
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM已加载完成');
-            
-            // 调试信息
-            console.log('是否登录:', '<?php echo is_logged_in() ? "是" : "否" ?>');
-            
             // 标签页切换
             const tabs = document.querySelectorAll('.course-tab');
             const tabContents = document.querySelectorAll('.tab-content');
             
-            console.log('找到标签页数量:', tabs.length);
-            console.log('找到内容区域数量:', tabContents.length);
-            
             tabs.forEach(tab => {
-                tab.addEventListener('click', function(e) {
+                tab.addEventListener('click', function() {
                     const target = this.getAttribute('data-tab');
-                    console.log('点击标签:', target);
                     
                     // 切换标签页激活状态
                     tabs.forEach(t => t.classList.remove('active'));
@@ -886,7 +818,6 @@ $page_title = $course['title'] . " - 爱心联萌";
                         content.classList.remove('active');
                         if (content.id === target) {
                             content.classList.add('active');
-                            console.log('激活内容区域:', target);
                         }
                     });
                 });
@@ -894,16 +825,13 @@ $page_title = $course['title'] . " - 爱心联萌";
             
             // 章节折叠展开
             const chapterHeaders = document.querySelectorAll('.chapter-header');
-            console.log('找到章节标题数量:', chapterHeaders.length);
             
             chapterHeaders.forEach(header => {
                 header.addEventListener('click', function() {
-                    console.log('点击章节标题');
                     this.classList.toggle('active');
                     const content = this.nextElementSibling;
                     if (content) {
                         content.classList.toggle('show');
-                        console.log('切换章节内容显示');
                     }
                 });
             });
@@ -915,82 +843,7 @@ $page_title = $course['title'] . " - 爱心联萌";
                     alert('请打开微信，使用"扫一扫"功能，扫描网页中的二维码来分享本课程。');
                 });
             }
-            
-            // 常见问题诊断
-            console.log('body子元素数量:', document.body.children.length);
-            console.log('主内容区可见性:', document.querySelector('.course-main') ? 'visible' : 'missing');
-            console.log('侧边栏可见性:', document.querySelector('.course-sidebar') ? 'visible' : 'missing');
-            
-            if (document.querySelector('.course-sidebar')) {
-                console.log('侧边栏样式:', 
-                    window.getComputedStyle(document.querySelector('.course-sidebar')));
-            }
         });
     </script>
-    
-    <?php if (is_logged_in()): ?>
-    <!-- 登录状态专用修复脚本 -->
-    <script>
-        // 确保在页面完全加载后执行登录状态专用修复
-        window.addEventListener('load', function() {
-            // 每300ms检查一次侧边栏是否显示，持续10次
-            let checks = 0;
-            let checkInterval = setInterval(function() {
-                checks++;
-                
-                // 修复侧边栏
-                const sidebar = document.querySelector('.course-sidebar');
-                if (sidebar) {
-                    sidebar.style.display = 'block';
-                    sidebar.style.visibility = 'visible';
-                    
-                    // 获取所有侧边栏卡片
-                    const cards = sidebar.querySelectorAll('.sidebar-card');
-                    cards.forEach(card => {
-                        card.style.display = 'block';
-                    });
-                    
-                    console.log('第' + checks + '次修复侧边栏');
-                }
-                
-                // 确保标签页功能正常
-                const tabs = document.querySelectorAll('.course-tab');
-                if (tabs.length > 0) {
-                    tabs.forEach(tab => {
-                        // 直接使用更直接的方式绑定点击事件
-                        tab.onclick = function() {
-                            const target = this.getAttribute('data-tab');
-                            
-                            // 激活标签
-                            tabs.forEach(t => t.classList.remove('active'));
-                            this.classList.add('active');
-                            
-                            // 激活内容
-                            const tabContents = document.querySelectorAll('.tab-content');
-                            tabContents.forEach(content => {
-                                content.style.display = 'none';
-                                content.classList.remove('active');
-                                
-                                if (content.id === target) {
-                                    content.style.display = 'block';
-                                    content.classList.add('active');
-                                }
-                            });
-                            
-                            return false; // 阻止默认行为
-                        };
-                    });
-                    
-                    console.log('第' + checks + '次修复标签页点击');
-                }
-                
-                // 停止检查
-                if (checks >= 10) {
-                    clearInterval(checkInterval);
-                }
-            }, 300);
-        });
-    </script>
-    <?php endif; ?>
 </body>
 </html> 
