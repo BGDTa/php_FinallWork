@@ -41,12 +41,11 @@ if (!empty($location)) {
     $types .= "s";
 }
 
-// 只有当没有明确筛选状态且不是从"所有状态"下拉菜单选择时，才默认只显示招募中和进行中的项目
+// 只有当没有进行状态筛选时，才默认只显示招募中和进行中的项目
+// 当用户明确选择了空状态（即"所有状态"选项）时，不添加状态条件
 if (empty($status) && !isset($_GET['status'])) {
     $conditions[] = "p.status IN ('招募中', '进行中')";
 }
-
-// 如果明确选择了"所有状态"（可能是空字符串值），则不添加状态条件
 
 // 组合查询条件
 $where_clause = !empty($conditions) ? "WHERE " . implode(" AND ", $conditions) : "";
@@ -438,7 +437,11 @@ $page_title = "公益项目列表 - 爱心联萌";
                                 <div class="project-quota">
                                     <span><?php echo $project['registered']; ?>/<?php echo $project['quota']; ?></span>
                                     <div class="project-quota-progress">
-                                        <div class="project-quota-bar" style="width: <?php echo ($project['quota'] > 0) ? min(($project['registered'] / $project['quota'] * 100), 100) : 0; ?>%"></div>
+                                        <div class="project-quota-bar" style="width: <?php 
+                                            $registered = isset($project['registered']) && is_numeric($project['registered']) ? (int)$project['registered'] : 0;
+                                            $quota = isset($project['quota']) && is_numeric($project['quota']) && (int)$project['quota'] > 0 ? (int)$project['quota'] : 1;
+                                            echo min(($registered / $quota * 100), 100);
+                                        ?>%"></div>
                                     </div>
                                 </div>
                                 <a href="detail.php?id=<?php echo $project['id']; ?>" class="btn btn-sm">查看详情</a>
@@ -505,7 +508,11 @@ $page_title = "公益项目列表 - 爱心联萌";
                                     <div class="project-quota">
                                         <span><?php echo $hot_project['registered']; ?>/<?php echo $hot_project['quota']; ?></span>
                                         <div class="project-quota-progress">
-                                            <div class="project-quota-bar" style="width: <?php echo ($hot_project['quota'] > 0) ? min(($hot_project['registered'] / $hot_project['quota'] * 100), 100) : 0; ?>%"></div>
+                                            <div class="project-quota-bar" style="width: <?php 
+                                                $registered = isset($hot_project['registered']) && is_numeric($hot_project['registered']) ? (int)$hot_project['registered'] : 0;
+                                                $quota = isset($hot_project['quota']) && is_numeric($hot_project['quota']) && (int)$hot_project['quota'] > 0 ? (int)$hot_project['quota'] : 1;
+                                                echo min(($registered / $quota * 100), 100);
+                                            ?>%"></div>
                                         </div>
                                     </div>
                                     <a href="detail.php?id=<?php echo $hot_project['id']; ?>" class="btn btn-sm">查看详情</a>

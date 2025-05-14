@@ -181,7 +181,8 @@ function get_user_info($user_id) {
 /**
  * 检查项目状态并更新
  * 如果项目开始日期已经过去，状态为"招募中"，则更新为"进行中"
- * 如果项目结束日期已经过去，状态不是"已结束"，则更新为"已结束"
+ * 如果项目结束日期已经过去，状态为"招募中"或"进行中"，则更新为"已结束"
+ * 保留其他状态（待审核、草稿、已取消）不变
  */
 function check_project_status() {
     global $conn;
@@ -191,9 +192,9 @@ function check_project_status() {
             WHERE status = '招募中' AND start_date <= CURDATE()";
     $conn->query($sql);
     
-    // 更新已结束的项目
+    // 更新已结束的项目 - 只更新招募中和进行中的项目
     $sql = "UPDATE projects SET status = '已结束' 
-            WHERE status != '已结束' AND end_date < CURDATE()";
+            WHERE status IN ('招募中', '进行中') AND end_date < CURDATE()";
     $conn->query($sql);
 }
 
