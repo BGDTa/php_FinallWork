@@ -130,8 +130,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // 记录登录活动
                 $sql = "UPDATE users SET last_login = NOW() WHERE id = ?";
                 $stmt = $conn->prepare($sql);
-                $stmt->bind_param("i", $user_id);
-                $stmt->execute();
+                if ($stmt === false) {
+                    // 记录错误但继续执行，避免中断注册流程
+                    error_log("数据库错误: " . $conn->error);
+                } else {
+                    $stmt->bind_param("i", $user_id);
+                    $stmt->execute();
+                }
                 
                 // 设置欢迎消息
                 set_message('注册成功！欢迎加入爱心联萌公益志愿平台。', 'success');

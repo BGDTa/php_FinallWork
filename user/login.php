@@ -295,7 +295,7 @@ $page_title = "用户登录 - 爱心联萌";
             <div class="login-footer">
                 <p><a href="forgot_password.php">忘记密码？</a></p>
                 <p>没有账户？<a href="register.php">立即注册</a></p>
-                <p>机构入驻？<a href="organization_register.php">机构注册</a></p>
+                <p>机构入驻？<a href="register.php?type=organization">机构注册</a></p>
                 
                 <div class="social-login">
                     <a href="#" title="微信登录"><i class="fab fa-weixin" style="color: #07C160;"></i></a>
