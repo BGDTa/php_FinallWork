@@ -286,8 +286,8 @@ $org_id_query = "SELECT id FROM users WHERE username = 'love_org'";
 $result = $conn->query($org_id_query);
 $org_id = ($result->num_rows > 0) ? $result->fetch_assoc()['id'] : 1;
 
-$sql = "INSERT INTO projects (title, description, organization_id, location, start_date, end_date, quota, status, contact_name, contact_phone, contact_email) 
-        VALUES ('关爱山区儿童公益行', '为山区儿童送去学习用品和关爱，组织志愿者前往山区学校开展支教活动。', $org_id, '四川省阿坝藏族羌族自治州', '2023-06-01', '2023-06-10', 20, '招募中', '李主任', '13800138000', 'project@aixinlianmeng.org')
+$sql = "INSERT INTO projects (title, description,cover_image, organization_id, location, start_date, end_date, quota, status, contact_name, contact_phone, contact_email) 
+        VALUES ('关爱山区儿童公益行', '为山区儿童送去学习用品和关爱，组织志愿者前往山区学校开展支教活动。','https://tse3-mm.cn.bing.net/th/id/OIP-C.n9_W8vF53gdnJVxAuX1ZNwHaDe?w=305&h=164&c=7&r=0&o=5&dpr=1.3&pid=1.7', $org_id, '四川省阿坝藏族羌族自治州', '2023-06-01', '2023-06-10', 20, '招募中', '李主任', '13800138000', 'project@aixinlianmeng.org')
         ";
 
 if ($conn->query($sql) === TRUE) {
@@ -296,8 +296,8 @@ if ($conn->query($sql) === TRUE) {
     echo "创建演示项目1时出错: " . $conn->error . "<br>";
 }
 
-$sql = "INSERT INTO projects (title, description, organization_id, location, start_date, end_date, quota, status, contact_name, contact_phone, contact_email) 
-        VALUES ('城市环保清洁日', '组织志愿者在城市公园和河畔进行垃圾清理活动，提高市民环保意识。', $org_id, '北京市海淀区', '2023-05-20', '2023-05-20', 50, '已结束', '王组长', '13900139000', 'project@aixinlianmeng.org')
+$sql = "INSERT INTO projects (title, description,cover_image, organization_id, location, start_date, end_date, quota, status, contact_name, contact_phone, contact_email) 
+        VALUES ('城市环保清洁日', '组织志愿者在城市公园和河畔进行垃圾清理活动，提高市民环保意识。','https://tse3-mm.cn.bing.net/th/id/OIP-C.8dwc8Ub0mkZ-dAqA4_4aVwHaHa?w=170&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7', $org_id, '北京市海淀区', '2023-05-20', '2023-05-20', 50, '已结束', '王组长', '13900139000', 'project@aixinlianmeng.org')
         ";
 
 if ($conn->query($sql) === TRUE) {
@@ -316,7 +316,7 @@ $result = $conn->query($project_id_query);
 $project_id = ($result->num_rows > 0) ? $result->fetch_assoc()['id'] : 2;
 
 $sql = "INSERT INTO stories (user_id, project_id, title, content, status) 
-        VALUES ($volunteer_id, $project_id, '我的第一次志愿服务经历', '那天，我和其他几十位志愿者一起来到了北京市海淀区的公园，开始了清理垃圾的活动。虽然天气很热，但看到自己的努力让公园变得更加干净，心里特别有成就感。希望有更多人加入到环保志愿服务中来！', '已审核')
+        VALUES ($volunteer_id, $project_id, $cover_image['https://tse3-mm.cn.bing.net/th/id/OIP-C.ktiGtZ0QHam2i7SGOOXYDwHaEh?w=278&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7'],'我的第一次志愿服务经历', '那天，我和其他几十位志愿者一起来到了北京市海淀区的公园，开始了清理垃圾的活动。虽然天气很热，但看到自己的努力让公园变得更加干净，心里特别有成就感。希望有更多人加入到环保志愿服务中来！', '已审核')
         ";
 
 if ($conn->query($sql) === TRUE) {
@@ -327,7 +327,7 @@ if ($conn->query($sql) === TRUE) {
 
 // 创建演示数据 - 公益课堂
 $sql = "INSERT INTO courses (title, description, cover_image, duration, author_id, status) 
-        VALUES ('志愿服务基础知识', '本课程介绍志愿服务的基本概念、类型以及参与方式，适合新手志愿者学习。', 'https://source.unsplash.com/random/800x450/?teaching', 45, $org_id, '已发布')
+        VALUES ('志愿服务基础知识', '本课程介绍志愿服务的基本概念、类型以及参与方式，适合新手志愿者学习。', 'https://tse4-mm.cn.bing.net/th/id/OIP-C.RH-2I5zFkdGp9gxZTOUO5QHaEK?w=302&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7', 45, $org_id, '已发布')
         ";
 
 if ($conn->query($sql) === TRUE) {
@@ -415,11 +415,11 @@ if ($result->num_rows > 0) {
 
 // 添加更多项目
 $project_data = [
-    ['社区老人关爱行动', '组织志愿者定期走访社区独居老人，提供生活帮助和情感陪伴', $org_ids['elder_help'], '上海市徐汇区', '2023-07-15', '2023-12-20', 15, '招募中'],
-    ['城市河道清洁计划', '定期清理城市河道垃圾，美化水环境', $org_ids['green_earth'], '广州市天河区', '2023-06-18', '2023-06-19', 30, '已结束'],
-    ['乡村儿童阅读推广', '为乡村学校捐赠图书，并组织志愿者进行阅读指导', $org_ids['child_care'], '云南省大理市', '2023-08-10', '2023-08-20', 25, '招募中'],
-    ['城市公园植树活动', '在城市公园举行植树活动，改善城市生态环境', $org_ids['green_earth'], '深圳市南山区', '2023-09-01', '2023-09-01', 40, '待审核'],
-    ['特殊儿童关爱日', '为特殊儿童提供一对一陪伴和互动游戏', $org_ids['child_care'], '北京市朝阳区', '2023-10-12', '2023-10-12', 20, '待审核']
+    ['社区老人关爱行动', '组织志愿者定期走访社区独居老人，提供生活帮助和情感陪伴',$cover_image['https://tse2-mm.cn.bing.net/th/id/OIP-C.arn74QS8NvsGRMF9BLvetAHaDt?w=327&h=175&c=7&r=0&o=5&dpr=1.3&pid=1.7'], $org_ids['elder_help'], '上海市徐汇区', '2023-07-15', '2023-12-20', 15, '招募中'],
+    ['城市河道清洁计划', '定期清理城市河道垃圾，美化水环境', $cover_image['https://tse1-mm.cn.bing.net/th/id/OIP-C.R7bAX2jcM5JmXkjDmFlJmgHaE8?w=235&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7'], $org_ids['green_earth'], '广州市天河区', '2023-06-18', '2023-06-19', 30, '已结束'],
+    ['乡村儿童阅读推广', '为乡村学校捐赠图书，并组织志愿者进行阅读指导',$cover_image['https://tse1-mm.cn.bing.net/th/id/OIP-C._KnVfN3yau1-YLa1w556lwHaFj?w=244&h=183&c=7&r=0&o=5&dpr=1.3&pid=1.7'], $org_ids['child_care'], '云南省大理市', '2023-08-10', '2023-08-20', 25, '招募中'],
+    ['城市公园植树活动', '在城市公园举行植树活动，改善城市生态环境', $cover_image['https://tse4-mm.cn.bing.net/th/id/OIP-C.jXf2V97d3aVy3gLg-6vgYgHaE7?w=243&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7'], $org_ids['green_earth'], '深圳市南山区', '2023-09-01', '2023-09-01', 40, '待审核'],
+    ['特殊儿童关爱日', '为特殊儿童提供一对一陪伴和互动游戏', $cover_image['https://tse4-mm.cn.bing.net/th/id/OIP-C.cLlsfI-jyc2zmYETqiamdAHaE7?w=299&h=199&c=7&r=0&o=5&dpr=1.3&pid=1.7'], $org_ids['child_care'], '北京市朝阳区', '2023-10-12', '2023-10-12', 20, '待审核']
 ];
 
 foreach ($project_data as $p) {
@@ -501,10 +501,10 @@ foreach ($registration_data as $r) {
 
 // 添加故事
 $story_data = [
-    [$volunteer_ids['volunteer002'], $project_ids['城市环保清洁日'], '环保志愿者的一天', '参加城市环保清洁日的经历让我深受感动。看到那么多志愿者一起努力，让我们的城市变得更加干净美丽。', '已审核'],
-    [$volunteer_ids['volunteer003'], $project_ids['城市河道清洁计划'], '守护城市的蓝色血脉', '河道清洁工作虽然辛苦，但看到清澈的河水和市民赞许的目光，一切都值得了。', '已审核'],
-    [$volunteer_ids['volunteer004'], $project_ids['社区老人关爱行动'], '与老人们的温暖时光', '陪伴社区老人的过程中，我收获了许多人生智慧，也感受到了人与人之间的真情实意。', '待审核'],
-    [$volunteer_ids['volunteer001'], null, '我的志愿服务之路', '从大学开始参与志愿服务至今，已经有五年时间，每一次服务都是一次成长。', '已审核']
+    [$volunteer_ids['volunteer002'], $project_ids['城市环保清洁日'],$cover_image['https://tse4-mm.cn.bing.net/th/id/OIP-C.kOXexSP6fYEcs6l7WIfHJgHaDV?w=303&h=157&c=7&r=0&o=5&dpr=1.3&pid=1.7'], '环保志愿者的一天', '参加城市环保清洁日的经历让我深受感动。看到那么多志愿者一起努力，让我们的城市变得更加干净美丽。', '已审核'],
+    [$volunteer_ids['volunteer003'], $project_ids['城市河道清洁计划'],$cover_image['https://tse3-mm.cn.bing.net/th/id/OIP-C.-6aIaBcFvQXejgpyEbdSWgHaFj?w=248&h=186&c=7&r=0&o=5&dpr=1.3&pid=1.7'], '守护城市的蓝色血脉', '河道清洁工作虽然辛苦，但看到清澈的河水和市民赞许的目光，一切都值得了。', '已审核'],
+    [$volunteer_ids['volunteer004'], $project_ids['社区老人关爱行动'],$cover_image['https://tse2-mm.cn.bing.net/th/id/OIP-C.f1AEtl-34ofeS7IaXtsi2AHaFj?w=225&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7'], '与老人们的温暖时光', '陪伴社区老人的过程中，我收获了许多人生智慧，也感受到了人与人之间的真情实意。', '待审核'],
+    [$volunteer_ids['volunteer001'], null, $cover_image['https://tse2-mm.cn.bing.net/th/id/OIP-C.hq1aknX5eNI5lXwtJaBd0AHaE8?w=276&h=184&c=7&r=0&o=5&dpr=1.3&pid=1.7'],'我的志愿服务之路', '从大学开始参与志愿服务至今，已经有五年时间，每一次服务都是一次成长。', '已审核']
 ];
 
 foreach ($story_data as $s) {
@@ -561,10 +561,10 @@ foreach ($comment_data as $c) {
 
 // 添加公益课堂
 $course_data = [
-    ['环保知识入门', '本课程介绍基本环保知识，垃圾分类方法和环保行动指南', 'https://source.unsplash.com/random/800x450/?environment', 30, $org_ids['green_earth'], '已发布'],
-    ['志愿服务心理辅导', '如何在志愿服务过程中进行心理调适和情绪管理', 'https://source.unsplash.com/random/800x450/?psychology', 60, $org_ids['love_org'], '已发布'],
-    ['儿童教育互动技巧', '与儿童互动的有效方法和技巧分享', 'https://source.unsplash.com/random/800x450/?children', 45, $org_ids['child_care'], '待发布'],
-    ['老年人护理基础', '基础的老年人护理知识和注意事项', 'https://source.unsplash.com/random/800x450/?elderly', 50, $org_ids['elder_help'], '已发布']
+    ['环保知识入门', '本课程介绍基本环保知识，垃圾分类方法和环保行动指南', 'https://tse3-mm.cn.bing.net/th/id/OIP-C.cea0GHSispRcciWd0P83fAHaEK?w=333&h=187&c=7&r=0&o=5&dpr=1.3&pid=1.7', 30, $org_ids['green_earth'], '已发布'],
+    ['志愿服务心理辅导', '如何在志愿服务过程中进行心理调适和情绪管理', 'https://tse3-mm.cn.bing.net/th/id/OIP-C.ZubiIzjynnHMePQ3_fRFZAHaHO?w=179&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7', 60, $org_ids['love_org'], '已发布'],
+    ['儿童教育互动技巧', '与儿童互动的有效方法和技巧分享', 'https://tse1-mm.cn.bing.net/th/id/OIP-C.x0UxK-lM20WjApfMEypRlAHaE8?w=286&h=191&c=7&r=0&o=5&dpr=1.3&pid=1.7', 45, $org_ids['child_care'], '待发布'],
+    ['老年人护理基础', '基础的老年人护理知识和注意事项', 'https://tse3-mm.cn.bing.net/th/id/OIP-C.yFyyAFcn7x7jWo6QIM3IFAHaFj?w=237&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7', 50, $org_ids['elder_help'], '已发布']
 ];
 
 foreach ($course_data as $c) {

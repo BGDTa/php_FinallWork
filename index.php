@@ -20,17 +20,43 @@ $page_title = "爱心联萌 - 公益志愿信息平台";
 
     <!-- 轮播Banner -->
     <section class="banner">
-        <div class="banner-content">
+        <div class="banner-content" style="text-align: center;font-size: 20px;">
             <h1>爱心联萌</h1>
             <p>连接爱心，共创美好</p>
-            <div class="banner-buttons">
+            <div class="banner-buttons" style="display: flex; justify-content: center;">
                 <a href="project/list.php" class="btn btn-primary">查看项目</a>
                 <a href="user/register.php" class="btn btn-secondary">成为志愿者</a>
             </div>
         </div>
         <div class="banner-image">
-            <!-- 使用在线图片占位 -->
-            <img src="https://source.unsplash.com/random/1200x400/?volunteer" alt="公益志愿服务">
+            <div class="banner-slider">
+                <div class="slide active">
+                    <img src="/assets/img/banner1.jpg" alt="关爱儿童">
+                </div>
+                <div class="slide">
+                    <img src="/assets/img/banner2.jpg" alt="关爱老虎">
+                </div>
+                <div class="slide">
+                    <img src="/assets/img/banner3.jpg" alt="节约用纸">
+                </div>
+                <div class="slide">
+                    <img src="/assets/img/banner4.jpg" alt="关爱留守儿童">
+                </div>
+                <div class="slide">
+                    <img src="/assets/img/banner5.jpg" alt="艾滋病">
+                </div>
+            </div>
+            <div class="slider-controls">
+                <span class="slider-dot active" data-slide="0"></span>
+                <span class="slider-dot" data-slide="1"></span>
+                <span class="slider-dot" data-slide="2"></span>
+                <span class="slider-dot" data-slide="3"></span>
+                <span class="slider-dot" data-slide="4"></span>
+            </div>
+            <div class="slider-arrows">
+                <span class="slider-arrow slider-arrow-left"><i class="fas fa-chevron-left"></i></span>
+                <span class="slider-arrow slider-arrow-right"><i class="fas fa-chevron-right"></i></span>
+            </div>
         </div>
     </section>
 

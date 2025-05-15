@@ -3,6 +3,105 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    // 轮播图功能实现
+    const slider = document.querySelector('.banner-slider');
+    const slides = document.querySelectorAll('.banner-slider .slide');
+    const dots = document.querySelectorAll('.slider-dot');
+    const prevArrow = document.querySelector('.slider-arrow-left');
+    const nextArrow = document.querySelector('.slider-arrow-right');
+    
+    if (slider && slides.length > 0) {
+        let currentSlide = 0;
+        const slideInterval = 5000; // 5秒切换一次
+        let isAnimating = false; // 添加动画状态标记
+        
+        // 自动轮播
+        let slideTimer = setInterval(nextSlide, slideInterval);
+        
+        // 点击指示点切换
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                if (isAnimating || currentSlide === index) return; // 防止动画过程中重复点击
+                clearInterval(slideTimer);
+                currentSlide = index;
+                updateSlider();
+                slideTimer = setInterval(nextSlide, slideInterval);
+            });
+        });
+        
+        // 箭头控制
+        if (nextArrow) {
+            nextArrow.addEventListener('click', () => {
+                if (isAnimating) return;
+                clearInterval(slideTimer);
+                nextSlide();
+                slideTimer = setInterval(nextSlide, slideInterval);
+            });
+        }
+        
+        if (prevArrow) {
+            prevArrow.addEventListener('click', () => {
+                if (isAnimating) return;
+                clearInterval(slideTimer);
+                currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+                updateSlider();
+                slideTimer = setInterval(nextSlide, slideInterval);
+            });
+        }
+        
+        // 下一张幻灯片
+        function nextSlide() {
+            if (isAnimating) return; // 如果正在动画中，则跳过
+            currentSlide = (currentSlide + 1) % slides.length;
+            updateSlider();
+        }
+        
+        // 更新轮播状态
+        function updateSlider() {
+            isAnimating = true; // 开始动画
+            
+            // 先移除所有的active类
+            slides.forEach((slide) => {
+                if (slide.classList.contains('active')) {
+                    slide.style.zIndex = 1; // 当前活跃的放在底层
+                }
+            });
+            
+            // 设置当前显示的幻灯片
+            slides[currentSlide].style.zIndex = 3; // 新幻灯片放在顶层
+            slides[currentSlide].classList.add('active');
+            
+            setTimeout(() => {
+                // 动画结束后移除非活跃幻灯片的active类
+                slides.forEach((slide, i) => {
+                    if (i !== currentSlide) {
+                        slide.classList.remove('active');
+                    }
+                });
+                
+                isAnimating = false; // 结束动画
+            }, 800); // 与CSS过渡时间一致
+            
+            // 更新指示点
+            dots.forEach((dot, i) => {
+                if (i === currentSlide) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+        
+        // 预加载图片
+        slides.forEach(slide => {
+            const img = slide.querySelector('img');
+            if (img) {
+                const preloadImg = new Image();
+                preloadImg.src = img.src;
+            }
+        });
+    }
+
     // 导航菜单切换
     const mobileToggle = document.querySelector('.mobile-toggle');
     const mainNav = document.querySelector('.main-nav');
