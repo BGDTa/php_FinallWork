@@ -318,10 +318,12 @@ ul {
     padding: 50px 0;
     display: flex;
     align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .banner-content {
-    flex: 0.8;
+    flex: 1;
     padding: 0 20px;
 }
 
@@ -343,13 +345,13 @@ ul {
 }
 
 .banner-image {
-    flex: 1.2;
+    flex: 1;
     position: relative;
     overflow: hidden;
     border-radius: 8px;
     box-shadow: var(--shadow);
     height: 400px;
-    margin-left: 30px;
+    margin: 0 20px;
 }
 
 .banner-slider {
@@ -930,7 +932,7 @@ ul {
     
     .banner-image {
         height: 350px; /* 减少高度 */
-        margin-left: 0;
+        margin: 0 auto;
     }
     
     .stats-grid {

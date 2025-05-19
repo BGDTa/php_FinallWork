@@ -290,18 +290,27 @@ $page_title = $story['title'] . " - 爱心联萌";
             font-size: 0.9rem;
         }
         
-        .story-author {
+        .story-meta span {
             display: flex;
             align-items: center;
         }
         
+        .story-meta span i {
+            margin-right: 5px;
+        }
+        
+        .story-author {
+            display: flex;
+            align-items: center;
+            height: 30px;
+        }
+        
         .author-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 10px;
+            width: 30px !important;
+            height: 30px !important;
             border: 2px solid white;
+            border-radius: 50%;
+            margin-right: 8px;
         }
         
         .story-content {
@@ -427,10 +436,13 @@ $page_title = $story['title'] . " - 爱心联萌";
         }
         
         .comment-avatar {
-            width: 40px;
-            height: 40px;
+            width: 30px !important;
+            height: 30px !important;
             border-radius: 50%;
             margin-right: 10px;
+            object-fit: cover;
+            flex-shrink: 0;
+            overflow: hidden;
         }
         
         .comment-username {
@@ -641,12 +653,12 @@ $page_title = $story['title'] . " - 爱心联萌";
                         <div class="story-overlay">
                             <h1 class="story-title"><?php echo $story['title']; ?></h1>
                             <div class="story-meta">
-                                <div class="story-author">
-                                    <img src="<?php echo !empty($story['avatar']) ? $story['avatar'] : 'https://via.placeholder.com/40'; ?>" alt="<?php echo $story['username']; ?>" class="author-avatar">
-                                    <span><?php echo $story['username']; ?></span>
-                                </div>
-                                <span><i class="fas fa-calendar"></i> <?php echo date('Y-m-d', strtotime($story['created_at'])); ?></span>
-                                <span><i class="fas fa-eye"></i> <?php echo $story['views']; ?> 浏览</span>
+                                <span class="story-author">
+                                    <img src="<?php echo $story['avatar']; ?>" class="author-avatar">
+                                    <?php echo $story['username']; ?> &nbsp;&nbsp;&nbsp;&nbsp;
+                                    <i class="fas fa-calendar"></i> <?php echo date('Y-m-d', strtotime($story['created_at'])); ?> &nbsp;&nbsp;&nbsp;&nbsp;
+                                    <i class="fas fa-eye"></i> <?php echo $story['views']; ?> 浏览
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -701,7 +713,7 @@ $page_title = $story['title'] . " - 爱心联萌";
                                 <div class="comment-item">
                                     <div class="comment-header">
                                         <div class="comment-user">
-                                            <img src="<?php echo !empty($comment['avatar']) ? $comment['avatar'] : 'https://via.placeholder.com/40'; ?>" alt="<?php echo $comment['username']; ?>" class="comment-avatar">
+                                            <img src="<?php echo !empty($comment['avatar']) ? $comment['avatar'] : 'https://via.placeholder.com/30'; ?>" alt="<?php echo $comment['username']; ?>" class="comment-avatar">
                                             <div>
                                                 <div class="comment-username"><?php echo $comment['username']; ?></div>
                                                 <div class="comment-date"><?php echo date('Y-m-d H:i', strtotime($comment['created_at'])); ?></div>

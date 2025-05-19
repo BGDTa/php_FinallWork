@@ -505,6 +505,39 @@ $page_title = $project['title'] . " - 爱心联萌";
                 grid-template-columns: 1fr;
             }
         }
+        
+        .comment-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--light-gray-color);
+        }
+        
+        .comment-user {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+        
+        .comment-username {
+            font-weight: bold;
+        }
+        
+        .comment-date {
+            font-size: 0.8rem;
+            color: var(--gray-color);
+        }
+        
+        .comment-content {
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
