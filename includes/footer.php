@@ -36,7 +36,7 @@
                 <p><i class="fas fa-phone"></i> 电话：010-12345678</p>
                 <p><i class="fas fa-envelope"></i> 邮箱：contact@aixinlianmeng.org</p>
                 <div class="qrcode">
-                    <img src="/assets/img/vx扫码部分.jpg" alt="微信公众号">
+                    <img src="../assets/img/vx扫码部分.jpg" alt="微信公众号">
                     <p>扫码关注公众号</p>
                 </div>
             </div>

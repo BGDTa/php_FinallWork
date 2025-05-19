@@ -79,16 +79,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $stmt->execute();
                     }
                     
-                    // 根据用户角色重定向
-                    switch ($user['role']) {
-                        case 'admin':
-                            header('Location: ../index.php');
-                            break;
-                        case 'organization':
-                            header('Location: organization_dashboard.php');
-                            break;
-                        default:
-                            header('Location: dashboard.php');
+                    // 根据用户角色跳转到不同页面
+                    if ($user['role'] == 'admin' || $user['role'] == 'organization') {
+                        // 管理员和机构用户跳转到后台管理
+                        header('Location: ../admin/index.php');
+                    } else {
+                        // 志愿者跳转到个人中心
+                        header('Location: dashboard.php');
                     }
                     exit;
                     

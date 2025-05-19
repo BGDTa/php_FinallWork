@@ -120,12 +120,22 @@ $already_checked_in = ($stmt->get_result()->num_rows > 0);
             align-items: center;
         }
         
-        .user-avatar {
+        /* 只为dashboard-header中的用户头像设置大尺寸 */
+        .dashboard-header .user-avatar {
             width: 100px;
             height: 100px;
             border-radius: 50%;
             object-fit: cover;
             margin-right: 30px;
+        }
+        
+        /* 确保顶部导航中的用户头像保持原来的尺寸 */
+        .user-dropdown .user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 8px;
         }
         
         .user-info {
@@ -375,7 +385,7 @@ $already_checked_in = ($stmt->get_result()->num_rows > 0);
                 </div>
             </div>
             <div class="actions">
-                <a href="profile.php" class="btn btn-primary">编辑资料</a>
+                <a href="../not_found.php" class="btn btn-primary">编辑资料</a>
                 <?php if (!$already_checked_in): ?>
                     <form method="post" action="dashboard.php">
                         <button type="submit" name="checkin" class="btn btn-secondary">每日打卡</button>
